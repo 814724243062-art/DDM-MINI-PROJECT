@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Voice Transport Management</title>
+  <style>
+    body { font-family: system-ui, Arial; max-width: 900px; margin: 20px auto; padding: 10px; }
+    .panel { border: 1px solid #ddd; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
+    button { padding: 8px 12px; margin-right: 8px; border-radius:6px; }
+    input, select { padding:6px; margin:6px 0; width:100%; box-sizing:border-box; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    th,td { border:1px solid #eee; padding:8px; text-align:left; }
+    .small { font-size:0.9rem; color:#555; }
+  </style>
+</head>
+<body>
+  <h1>Voice-based Transport Management (Mini)</h1>
+  <p class="small">Use voice to fill forms or use typed input. Tested in Chrome/Edge with Web Speech API.</p>
+
+  <div class="panel" id="voice-panel">
+    <h3>Voice Input</h3>
+    <p id="status">Status: <strong id="status-text">idle</strong></p>
+    <button id="start-btn">Start Listening</button>
+    <button id="stop-btn" disabled>Stop</button>
+    <button id="clear-btn">Clear Transcript</button>
+    <p><strong>Transcript:</strong></p>
+    <textarea id="transcript" rows="4" style="width:100%"></textarea>
+    <p class="small">Tip: say commands like "add vehicle number KA01AB1234 model Swift capacity 4 driver John contact 9876543210" OR speak values then click appropriate "Use transcript" button below.</p>
+  </div>
+
+  <div class="panel">
+    <h3>Add Vehicle</h3>
+    <label>Vehicle No<input id="vehicle_no" /></label>
+    <label>Model<input id="model" /></label>
+    <label>Capacity<input id="capacity" type="number" /></label>
+    <label>Driver Name<input id="driver_name" /></label>
+    <label>Contact<input id="contact" /></label>
+    <div style="margin-top:8px;">
+      <button id="use-trans-vehicle">Use Transcript</button>
+      <button id="save-vehicle">Save Vehicle</button>
+      <button id="refresh-vehicles">Refresh List</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Trips</h3>
+    <label>Vehicle:
+      <select id="vehicle_select"><option value="">-- select --</option></select>
+    </label>
+    <label>Origin<input id="origin" /></label>
+    <label>Destination<input id="destination" /></label>
+    <label>Trip Date<input id="trip_date" type="date" /></label>
+    <div style="margin-top:8px;">
+      <button id="use-trans-trip">Use Transcript</button>
+      <button id="save-trip">Save Trip</button>
+      <button id="refresh-trips">Refresh Trips</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Vehicle List</h3>
+    <div id="vehicles-table"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Trip List</h3>
+    <div id="trips-table"></div>
+  </div>
+
+<script>
+let recognition, listening=false;
+const startBtn = document.getElementById('start-btn');
+const stopBtn = document.getElementById('stop-btn');
+const clearBtn = document.getElementById('clear-btn');
+const statusText = document.getElementById('status-text');
+const transcriptEl = document.getElementById('transcript');
+
+if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+  statusText.textContent = 'Not supported in this browser. Use Chrome or Edge.';
+  startBtn.disabled = true;
+} else {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.lang = 'en-IN';
+  recognition.interimResults = true;
+  recognition.continuous = true;
+
+  recognition.onstart = () => { listening = true; statusText.textContent = 'listening...'; startBtn.disabled=true; stopBtn.disabled=false; };
+  recognition.onend = () => { listening = false; statusText.textContent = 'idle'; startBtn.disabled=false; stopBtn.disabled=true; };
+  recognition.onerror = (e) => { console.error('Speech error', e); statusText.textContent = 'error: '+(e.error||e.message||""); };
+}
+</script>
+</body>
+</html>
